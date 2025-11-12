@@ -4,6 +4,44 @@
 
     const checkBugButton = document.getElementById("checkBug");
     const result = document.getElementById("result");
+    const lastUpdatedElement = document.getElementById("lastUpdated");
+    const autoRefreshButton = document.getElementById("autoRefresh");
+    let lastUpdateTime = null;
+    let autoRefreshInterval = null;
+    let autoRefreshEnabled = false;
+
+    function updateTimestamp() {
+        lastUpdateTime = new Date();
+        const hours = String(lastUpdateTime.getHours()).padStart(2, '0');
+        const minutes = String(lastUpdateTime.getMinutes()).padStart(2, '0');
+        const seconds = String(lastUpdateTime.getSeconds()).padStart(2, '0');
+        const month = lastUpdateTime.toLocaleString('en-US', { month: 'short' });
+        const date = lastUpdateTime.getDate();
+        lastUpdatedElement.textContent = `Last updated at ${hours}:${minutes}:${seconds} on ${month} ${date}`;
+    }
+
+    function toggleAutoRefresh() {
+        autoRefreshEnabled = !autoRefreshEnabled;
+
+        if (autoRefreshEnabled) {
+            autoRefreshButton.classList.add('bg-green-500', 'text-white');
+            autoRefreshButton.querySelector('span').textContent = '(ON)';
+
+            autoRefreshInterval = setInterval(async () => {
+                result.innerHTML = "";
+                await updatePage();
+                updateTimestamp();
+            }, 5 * 60 * 1000);
+        } else {
+            autoRefreshButton.classList.remove('bg-green-500', 'text-white');
+            autoRefreshButton.querySelector('span').textContent = '(OFF)';
+
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+    }
 
     async function getLatestBugzillaURL() {
         const res = await fetch("https://bugzilla.mozilla.org/rest/bug?creation_time=2025-01-01&include_fields=id&order=bug_id%20DESC&limit=1");
@@ -40,6 +78,8 @@
             console.log(anchor, result)
 
             result.appendChild(fragment);
+
+            document.title = `${calcNumber} Bugs Remain`;
     }
 
     checkBugButton.addEventListener("click", async () => {
@@ -47,19 +87,18 @@
 
             result.innerHTML = "";
             await updatePage();
+            updateTimestamp();
 
         } catch (err) {
             result.textContent = "Error fetching bug: " + err.message;
         }
     }, false);
 
+    autoRefreshButton.addEventListener("click", toggleAutoRefresh);
+
     document.addEventListener("DOMContentLoaded", (event) => {
         updatePage();
-
-        setTimeout(()=>{
-            checkBugButton.classList.remove("opacity-0");
-        }, 2000)
-
+        updateTimestamp();
     });
 
 
