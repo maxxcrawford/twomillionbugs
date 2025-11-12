@@ -44,6 +44,8 @@
 
     checkBugButton.addEventListener("click", async () => {
         try {
+
+            result.innerHTML = "";
             await updatePage();
 
         } catch (err) {
