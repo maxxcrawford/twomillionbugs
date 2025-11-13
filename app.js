@@ -31,7 +31,7 @@
                 result.innerHTML = "";
                 await updatePage();
                 updateTimestamp();
-            }, 5 * 60 * 1000);
+            }, 60 * 1000);
         } else {
             autoRefreshButton.classList.remove('bg-green-500', 'text-white');
             autoRefreshButton.querySelector('span').textContent = '(OFF)';
@@ -99,6 +99,7 @@
     document.addEventListener("DOMContentLoaded", (event) => {
         updatePage();
         updateTimestamp();
+        toggleAutoRefresh();
     });
 
 
